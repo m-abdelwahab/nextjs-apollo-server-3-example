@@ -1,34 +1,62 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Reproduction
 
-## Getting Started
+Doing a default export throws the following error:
 
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
+```ts
+export default apolloServer.start().then(() => {
+  const apolloHandler = apolloServer.createHandler({ path: "/api/graphql" });
+  return cors((req: NextApiRequest, res: NextApiResponse) =>
+    req.method === "OPTIONS" ? res.end() : apolloHandler(req, res)
+  );
+});
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+```bash
+TypeError: resolver is not a function
+    at apiResolver (/Users/m-abdelwahab/Desktop/api-routes-graphql/node_modules/next/dist/next-server/server/api-utils.js:8:7)
+    at DevServer.handleApiRequest (/Users/m-abdelwahab/Desktop/api-routes-graphql/node_modules/next/dist/next-server/server/next-server.js:66:492)
+    at processTicksAndRejections (internal/process/task_queues.js:93:5)
+    at async Object.fn (/Users/m-abdelwahab/Desktop/api-routes-graphql/node_modules/next/dist/next-server/server/next-server.js:58:580)
+    at async Router.execute (/Users/m-abdelwahab/Desktop/api-routes-graphql/node_modules/next/dist/next-server/server/router.js:25:67)
+    at async DevServer.run (/Users/m-abdelwahab/Desktop/api-routes-graphql/node_modules/next/dist/next-server/server/next-server.js:68:1042)
+    at async DevServer.handleRequest (/Users/m-abdelwahab/Desktop/api-routes-graphql/node_modules/next/dist/next-server/server/next-server.js:32:504)
+```
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+The solution is using `module.exports` instead.
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+I can't connect to Apollo Studio. 
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+Checking the network tab, a request is sent every second (as expected) but the `status` is `pending` and doesn't change.
 
-## Learn More
+I also get the following error:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+Error: Invalid body
+    at createError (/Users/m-abdelwahab/Desktop/api-routes-graphql/node_modules/micro/lib/index.js:20:14)
+    at /Users/m-abdelwahab/Desktop/api-routes-graphql/node_modules/micro/lib/index.js:149:12
+    at processTicksAndRejections (internal/process/task_queues.js:93:5)
+    at async graphqlHandler (/Users/m-abdelwahab/Desktop/api-routes-graphql/node_modules/apollo-server-micro/dist/microApollo.js:31:22)
+    at async ApolloServer.handleGraphqlRequestsWithServer (/Users/m-abdelwahab/Desktop/api-routes-graphql/node_modules/apollo-server-micro/dist/ApolloServer.js:86:34)
+    at async /Users/m-abdelwahab/Desktop/api-routes-graphql/node_modules/apollo-server-micro/dist/ApolloServer.js:30:21
+    at async apiResolver (/Users/m-abdelwahab/Desktop/api-routes-graphql/node_modules/next/dist/next-server/server/api-utils.js:8:1)
+    at async DevServer.handleApiRequest (/Users/m-abdelwahab/Desktop/api-routes-graphql/node_modules/next/dist/next-server/server/next-server.js:66:462)
+    at async Object.fn (/Users/m-abdelwahab/Desktop/api-routes-graphql/node_modules/next/dist/next-server/server/next-server.js:58:580)
+    at async Router.execute (/Users/m-abdelwahab/Desktop/api-routes-graphql/node_modules/next/dist/next-server/server/router.js:25:67) {
+  statusCode: 400,
+  originalError: ClientError [BadRequestError]: request aborted
+      at IncomingMessage.onAborted (/Users/m-abdelwahab/Desktop/api-routes-graphql/node_modules/micro/node_modules/raw-body/index.js:231:10)
+      at IncomingMessage.emit (events.js:315:20)
+      at abortIncoming (_http_server.js:561:9)
+      at socketOnEnd (_http_server.js:577:5)
+      at Socket.emit (events.js:327:22)
+      at endReadableNT (_stream_readable.js:1327:12)
+      at processTicksAndRejections (internal/process/task_queues.js:80:21) {
+    code: 'ECONNABORTED',
+    expected: 1795,
+    length: 1795,
+    received: 0,
+    type: 'request.aborted'
+  }
+}
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+```
