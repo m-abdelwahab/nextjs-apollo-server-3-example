@@ -27,6 +27,8 @@ The solution is using `module.exports` instead.
 I can't connect to Apollo Studio. 
 
 Checking the network tab, a request is sent every second (as expected) but the `status` is `pending` and doesn't change.
+<img width="1552" alt="DevTools" src="https://user-images.githubusercontent.com/27310414/126048755-b1fcecac-c280-4342-8285-628a04eabdbf.png">
+
 
 I also get the following error:
 
